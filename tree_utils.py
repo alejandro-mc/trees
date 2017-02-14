@@ -148,6 +148,9 @@ def toNewickTree(tree):
         ntree += toNewickSubTree(subtree) + ","
     return ntree[0:-1] + ")"
 
+def newickToNestedLst(newick_tree):
+    return eval(newick_tree.replace(":1","").replace("(","[").replace(")","]"))
+
 #compare two trees using variation of AHU algorithm
 #for every node or leaf at every level
 #the sorted nodes must be the same
