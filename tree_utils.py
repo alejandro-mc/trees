@@ -97,15 +97,31 @@ def genRandTree(leaves):
     return subtree
 
 #generates a binary tree
-def genRandBinTree(leaves):
+def genRandBinTreeWithPartitions(leaves):
     if len(leaves) < 2:
         return leaves[0]
     
     subtree=[]
     for part in randBinPart(leaves):
-        subtree.append(genRandBinTree(part))
+        subtree.append(genRandBinTreeWithPartitions(part))
     
     return subtree
+
+#generates a binary tree
+def genRandBinTree(leaves):
+    
+    while len(leaves) > 1:
+        #pick two random elements
+        a = random.randint(0,len(leaves)-1)
+        sibling1 = leaves[a]
+        del leaves[a]
+        b = random.randint(0,len(leaves)-1)
+        sibling2 = leaves[b]
+        del leaves[b]
+        
+        leaves.append([sibling1,sibling2])
+        
+    return leaves[0]
 
 #generates a random binary tree in Newick format
 def randNewickBinSubTree(leaves):
