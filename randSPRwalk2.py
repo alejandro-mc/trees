@@ -14,7 +14,7 @@ def randSPRwalk(size,steps,runs,seed):
     
     
     #write SPR sequence to file
-    rand_tree = genRandBinTree(range(size))
+    rand_tree = genRandBinTree(list(range(size)))
     total_nodes = countNodes(rand_tree)
 
     #create a file for each spr sequence
