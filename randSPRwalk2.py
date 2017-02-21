@@ -12,14 +12,13 @@ def randSPRwalk(size,steps,runs,seed):
     #set the seed
     random.seed(seed)
     
-    
-    #write SPR sequence to file
-    rand_tree     = genRandBinTree(list(range(size)))
-    total_nodes   = countNodes(rand_tree)
     out_file_name = "SPR_" + str(size) + "_" + str(steps) + "_" +\
                     str(runs)  + "_" + str(seed) 
+    
     #create a file for each spr sequence
     for k in range(runs):
+        rand_tree     = genRandBinTree(list(range(size)))
+        total_nodes   = countNodes(rand_tree)
         #write current sequence to file
         with open('tmpsprseq' + str(k),'w') as treefile:
             treefile.write(toNewickTree(rand_tree) + "\n")
