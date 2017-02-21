@@ -12,11 +12,11 @@ def randSPRwalk(size,steps,runs,seed):
     #set the seed
     random.seed(seed)
     
-    
     #write SPR sequence to file
     rand_tree = genRandBinTree(list(range(size)))
     total_nodes = countNodes(rand_tree)
-
+    out_file_name = "SPR_" + str(size) + "_" + str(steps) + "_" +\
+                    str(runs)  + "_" + str(seed)
     #create a file for each spr sequence
     for k in range(runs):
         #write current sequence to file
@@ -37,7 +37,7 @@ def randSPRwalk(size,steps,runs,seed):
         #prepend number of nodes to every line in the file
         #and append the lines to out results file
         with open('tempnodesseqfile','r') as seqfile:
-            with open('nodesPlusDists','a') as nodesSeqs:
+            with open(out_file_name,'a') as nodesSeqs:
                 for line in seqfile:
                     nodesSeqs.write(str(total_nodes) + "," + line)
             

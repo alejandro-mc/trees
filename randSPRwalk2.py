@@ -14,9 +14,10 @@ def randSPRwalk(size,steps,runs,seed):
     
     
     #write SPR sequence to file
-    rand_tree = genRandBinTree(list(range(size)))
-    total_nodes = countNodes(rand_tree)
-
+    rand_tree     = genRandBinTree(list(range(size)))
+    total_nodes   = countNodes(rand_tree)
+    out_file_name = "SPR_" + str(size) + "_" + str(steps) + "_" +\
+                    str(runs)  + "_" + str(seed) 
     #create a file for each spr sequence
     for k in range(runs):
         #write current sequence to file
@@ -32,7 +33,7 @@ def randSPRwalk(size,steps,runs,seed):
         infile  = "tmpsprseq" + str(k)
         os.system("java -jar gtp.jar -r 1 -o " + outfile + " " + infile)
         #append output to final sequence file
-        os.system("cat tempseq.csv | ./toLines.py >> distSequences")
+        os.system("cat tempseq.csv | ./toLines.py >> " + out_file_name)
         #cleanup
         os.system("rm tempseq.csv")
         os.system("rm tmpsprseq*")
