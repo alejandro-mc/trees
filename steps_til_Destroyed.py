@@ -34,11 +34,12 @@ def steps_til_Destroyed(filename,epsilon):
 
         
 if __name__=='__main__':
-    if len(sys.argv)<2:
+    if len(sys.argv)<3:
         print ("Too few arguments!!")
-        print ("Usage: <nodes-plus-sequence filename>")
+        print ("Usage: <nodes-plus-sequence filename> <epsilon>")
         sys.exit(-1)
     
     filename = sys.argv[1]
+    epsilon  = sys.argv[2]
     
-    steps_til_Destroyed(filename,0.1)
+    steps_til_Destroyed(filename,float(epsilon))
