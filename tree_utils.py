@@ -51,33 +51,73 @@ def randBinPart(lst):
     n = random.randint(1,len(lst)-1)
     return partition(lst,lambda x: [n,len(lst)-n])
 
-#functions to perform tree rotations
+#functions to perform tree rotations or NNI moves
 def rotateLeft(subtree):
     return [[subtree[0],subtree[1][0]],subtree[1][1]] 
 
 def rotateRight(subtree):
     return [subtree[0][0],[subtree[0][1],subtree[1]]]
 
-#we would like to perform random rotations
-#randRotate returns a pair [action,rotated subtree]
+#return rotated subtree if it can be rotated
+#otherwise returns []
 def randRotate(subtree):
-    #0 - do nothing, 1 - rotate left, 2 - rotate right
-    action = random.randint(0,2) 
-    if  action == 1:
-        #rotate right
-        #check we can rotate right
-        if isinstance(subtree[0],list):
-            return [1,[subtree[0][0],[subtree[0][1],subtree[1]]]]
-        else:
-            return [0,subtree]
-    elif action == 2:
-        #rotate left
-        if isinstance(subtree[1],list):
-            return [2,[[subtree[0],subtree[1][0]],subtree[1][1]]]
-        else:
-            return [0,subtree]
+    
+    actions = []
+    
+    if isinstance(subtree[0],list):
+        actions.append(rotateRight)
+    
+    if isinstance(subtree[1],list):
+        actions.append(rotateLeft)
+    
+    length = len(actions) 
+    if length != 0:
+        return actions[random.randint(0,length -1)](subtree)
     else:
-        return [0,subtree]
+        return []
+
+
+__rotation_performed__ = False
+
+def rotateNode(subtree,targetNode,i):
+    global __rotation_performed__
+    #base cases
+    
+    #leaf
+    if not isinstance(subtree,list):
+        return (subtree,i-1)
+    
+    #target node reached
+    if targetNode == i:
+        rotated = randRotate(subtree)
+        if rotated != []:
+            __rotation_performed__ = True
+            return (rotated,i+1)
+        else:
+            return (subtree,i)
+    
+    #rotation performed
+    if targetNode < i:
+        return (subtree,i)
+    
+    #recursive calls
+    left,j  = rotateNode(subtree[0],targetNode,i+1)
+    right,k = rotateNode(subtree[1],targetNode,j+1)
+    
+    return ([left,right],k)
+    
+#perform a random NNI move
+def randNNI(tree,total_nodes):
+    
+    global __rotation_performed__
+    __rotation_performed__ = False
+    
+    while True:
+        targetNode = random.randint(1,total_nodes)
+        rotated,i = rotateNode(tree,targetNode,1)
+        if __rotation_performed__:
+            return rotated
+
 
 #generates a random tree containing the leaves in the "leaves" list 
 #Base case: for input [leaf] ==> leaf whch is the only posible tree
