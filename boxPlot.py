@@ -13,7 +13,7 @@ def gatherStats(filenames):
         with open(filename,'r') as sprfile:
             for line in sprfile:
                 trimmed   = line[0:-1]
-                distances = map(lambda x : float(x) ,trimmed.split(','))
+                distances = list(map(lambda x : float(x) ,trimmed.split(',')))
                 for i in range(len(distances)):
                     #add distance data to stats
                     #for now we just add to the list
