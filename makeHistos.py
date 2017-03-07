@@ -12,7 +12,7 @@ __max__ = 0
 __bincount__ = 0
 
 class histogram:
-    def __init__(self,bincount,minimum,maximum):
+    def __init__(self,bincount,maximum,minimum):
         self.bincount = bincount
         self.minimum  = minimum
         self.maximum  = maximum
@@ -24,14 +24,16 @@ class histogram:
     def addData(self,data_point):
         
         #map data point to a bin
-        point_bin = floor(data_point * self.__binmapfactor__)
+        point_bin = int(data_point * self.__binmapfactor__)
+        #print("data_point: ",data_point,"point_bin: ",point_bin)
         
         self.bins[point_bin] += 1
         self.count +=1
-        print(self.bins)
+        #print(self.bins)
     
     def getPercentiles(self):
         percentiles = []
+        binsize = (self.maximum - self.minimum) / self.bincount 
         
         #get 0.25 percentile
         t1 =  self.count * 0.25
@@ -41,7 +43,7 @@ class histogram:
             count += self.bins[curr_bin]
             curr_bin +=1
         
-        percentiles.append(curr_bin)
+        percentiles.append(curr_bin * binsize)
         
         #get 0.5 percentile
         t2 =  self.count * 0.5
@@ -49,7 +51,7 @@ class histogram:
             count += self.bins[curr_bin]
             curr_bin +=1
             
-        percentiles.append(curr_bin)
+        percentiles.append(curr_bin * binsize)
         
         #get 0.75 percentile
         t3 =  self.count * 0.75
@@ -57,7 +59,7 @@ class histogram:
             count += self.bins[curr_bin]
             curr_bin +=1
             
-        percentiles.append(curr_bin)
+        percentiles.append(curr_bin * binsize)
         
         
         return percentiles
@@ -114,10 +116,11 @@ def plotWalks():
     histograms = [s[2] for s in firstN(19)]
     stats    = [h.getPercentiles() for h in histograms]
     medians  = list(map(lambda s: s[1],stats))
-    intervals = list(map(lambda s: [s[0],s[2]],stats)) 
-    #plt.boxplot(minmax,usermedians=medians,conf_intervals=intervals)
-    #plt.show()
-    print(stats)
+    intervals = list(map(lambda s: [s[0],s[2]],stats))
+    data = [ s + m for s,m in zip(stats,minmax)]
+    plt.boxplot(data,usermedians=medians)
+    #print(zip(minmax,stats))
+    plt.show()
 
 
 if __name__=='__main__':
@@ -132,11 +135,11 @@ if __name__=='__main__':
     __min__      = 0
     __bincount__ = int(sys.argv[3])
     
-    spr_files = glob.glob( sys.argv[1] + "_" + sys.argv[2] + "_*")
+    files = glob.glob( sys.argv[1] + "_" + sys.argv[2] + "_*")
     
-    for i in spr_files:
+    for i in files:
         print("gathering data from: " + i)
-        gatherStats(spr_files)
+        gatherStats(files)
     
     #do domething with the stats
     plotWalks()
