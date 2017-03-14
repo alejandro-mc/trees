@@ -4,7 +4,8 @@ import sys
 
 __pid__ = 0
 
-def randTreeDistances(size,runs,seed):
+#daf: distance algorithm file
+def randTreeDistances(daf,size,runs,seed):
     global __pid__
     
     #set the seed
@@ -24,34 +25,36 @@ def randTreeDistances(size,runs,seed):
             
     #assumes GTP file is in current working directory
     #outfile       = "tmpdist" + str(__pid__) + ".csv"
-    os.system("java -jar gtp.jar -o " + outfile + " " + infile)
+    os.system("java -jar " + daf + " -o " + outfile + " " + infile)
     #cleanup
     os.system("rm " + infile)
 
 
 if __name__=='__main__':
-    if len(sys.argv)<4:
+    if len(sys.argv)<5:
         print ("Too few arguments!!")
-        print ("Usage: <size or size range> <no. runs> <seed or seed range>")
+        print ("Usage: <distance algorithm file .jar> <size or size range> <no. runs> <seed or seed range>")
         sys.exit(-1)
     
+    dist_algo_file = sys.argv[1]
+    
     #take a single size or a range of sizes
-    if ":" in sys.argv[1]:
-        size_start, size_end = map(lambda x: int(x),sys.argv[1].split(':'))
+    if ":" in sys.argv[2]:
+        size_start, size_end = map(lambda x: int(x),sys.argv[2].split(':'))
     else:
-        size_start = int(sys.argv[1])
+        size_start = int(sys.argv[2])
         size_end   = size_start + 1
     
     
     size_range = range(size_start,size_end)
     
-    runs  = int(sys.argv[2])
+    runs  = int(sys.argv[3])
     
     #take a single seed or a range of seeds
-    if ":" in sys.argv[3]:
-        seed_start,seed_end = map(lambda x: int(x),sys.argv[3].split(':'))
+    if ":" in sys.argv[4]:
+        seed_start,seed_end = map(lambda x: int(x),sys.argv[4].split(':'))
     else:
-        seed_start = int(sys.argv[3])
+        seed_start = int(sys.argv[4])
         seed_end   = seed_start + 1
     
     seed_range = range(seed_start,seed_end)
@@ -61,4 +64,4 @@ if __name__=='__main__':
 
     for size in size_range:
         for seed in seed_range:
-            randTreeDistances(size,runs,seed)
+            randTreeDistances(dist_algo_file,size,runs,seed)

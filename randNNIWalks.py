@@ -9,7 +9,8 @@ import sys
 
 __pid__ = 0
 
-def randNNIwalk(size,steps,runs,seed):
+#daf: distance algorithm file
+def randNNIwalk(daf,size,steps,runs,seed):
     global __pid__
     
     #set the seed
@@ -36,7 +37,7 @@ def randNNIwalk(size,steps,runs,seed):
         outfile       = "tempseq" + str(__pid__) + ".csv"
         infile_prefix = "tmpnniseq" + str(__pid__)
         infile        = infile_prefix + str(k)
-        os.system("java -jar gtp.jar -r 1 -o " + outfile + " " + infile)
+        os.system("java -jar " + daf + " -r 1 -o " + outfile + " " + infile)
         #append output to final sequence file
         os.system("cat " + outfile + " | ./toLines.py >> " + out_file_name)
         #cleanup
@@ -45,29 +46,31 @@ def randNNIwalk(size,steps,runs,seed):
 
 
 if __name__=='__main__':
-    if len(sys.argv)<5:
+    if len(sys.argv)<6:
         print ("Too few arguments!!")
-        print ("Usage: <size or size range> <no. NNI steps> <no. runs> <seed or seed range>")
+        print ("Usage: <distance algorithm file .jar> <size or size range> <no. NNI steps> <no. runs> <seed or seed range>")
         sys.exit(-1)
     
+    dist_algo_file = sys.argv[1]
+    
     #take a single size or a range of sizes
-    if ":" in sys.argv[1]:
-        size_start, size_end = map(lambda x: int(x),sys.argv[1].split(':'))
+    if ":" in sys.argv[2]:
+        size_start, size_end = map(lambda x: int(x),sys.argv[2].split(':'))
     else:
-        size_start = int(sys.argv[1])
+        size_start = int(sys.argv[2])
         size_end   = size_start + 1
     
     
     size_range = range(size_start,size_end)
     
-    steps = int(sys.argv[2])
-    runs  = int(sys.argv[3])
+    steps = int(sys.argv[3])
+    runs  = int(sys.argv[4])
     
     #take a single seed or a range of seeds
-    if ":" in sys.argv[4]:
-        seed_start,seed_end = map(lambda x: int(x),sys.argv[4].split(':'))
+    if ":" in sys.argv[5]:
+        seed_start,seed_end = map(lambda x: int(x),sys.argv[5].split(':'))
     else:
-        seed_start = int(sys.argv[4])
+        seed_start = int(sys.argv[5])
         seed_end   = seed_start + 1
     
     seed_range = range(seed_start,seed_end)
@@ -77,4 +80,4 @@ if __name__=='__main__':
 
     for size in size_range:
         for seed in seed_range:
-            randNNIwalk(size,steps,runs,seed)
+            randNNIwalk(dist_algo_file,size,steps,runs,seed)
