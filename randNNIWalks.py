@@ -8,15 +8,17 @@ import os
 import sys
 
 __pid__ = 0
+__prefix__ = "NNI_"
 
 #daf: distance algorithm file
 def randNNIwalk(daf,size,steps,runs,seed):
     global __pid__
+    global __prefix__
     
     #set the seed
     random.seed(seed)
     
-    out_file_name = "NNI_" + str(size) + "_" + str(steps) + "_" +\
+    out_file_name = __prefix__ + str(size) + "_" + str(steps) + "_" +\
                     str(runs)  + "_" + str(seed) 
     
     #create a file for each spr sequence
@@ -52,6 +54,9 @@ if __name__=='__main__':
         sys.exit(-1)
     
     dist_algo_file = sys.argv[1]
+    
+    if dist_algo_file != "gtp.jar":
+        __prefix__ = "RNI_"
     
     #take a single size or a range of sizes
     if ":" in sys.argv[2]:

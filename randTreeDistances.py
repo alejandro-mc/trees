@@ -3,15 +3,18 @@ import os
 import sys
 
 __pid__ = 0
+__prefix__ = "DST_"
+
 
 #daf: distance algorithm file
 def randTreeDistances(daf,size,runs,seed):
     global __pid__
+    global__prefix__
     
     #set the seed
     random.seed(seed)
     
-    outfile = "DST_" + str(size) + "_"+\
+    outfile = __prefix__ + str(size) + "_"+\
                        str(runs)  + "_" + str(seed) 
     
     #create a file to write all the trees
@@ -37,6 +40,9 @@ if __name__=='__main__':
         sys.exit(-1)
     
     dist_algo_file = sys.argv[1]
+    
+    if dist_algo_file != "gtp.jar":
+        __prefix__ = "DRF_"
     
     #take a single size or a range of sizes
     if ":" in sys.argv[2]:
