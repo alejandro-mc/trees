@@ -25,7 +25,8 @@ class histogram:
         
         #map data point to a bin
         point_bin = int(data_point * self.__binmapfactor__)
-        #print("data_point: ",data_point,"point_bin: ",point_bin)
+        print("data_point: ",data_point,"point_bin: ",point_bin)
+        print("bin has")
         
         self.bins[point_bin] += 1
         self.count +=1
@@ -110,16 +111,48 @@ def gatherStats(filenames):
 def firstN(n):
     return __stats__[0:n]
 
+
+#stats: [[p25,median,p75,miny,maxy] ,... ]
+def get_boxplot_from_stats(stats):
+    
+    #create boxplot instance with len(stats) boxes
+    boxplot = plt.boxplot([[]]*len(stats))
+    
+    box_no = 0
+    for p25,median,p75,miny,maxy in stats:
+        
+        #set caps
+        boxplot['caps'][2*box_no].set_ydata([miny,miny])#lower
+        boxplot['caps'][2*box_no + 1].set_ydata([maxy,maxy])#higher
+        
+        #set medians
+        boxplot['medians'][box_no].set_ydata([median,median])
+        
+        #set whiskers
+        boxplot['whiskers'][2*box_no].set_ydata([miny,p25])
+        boxplot['whiskers'][2*box_no + 1].set_ydata([p75,maxy])
+        
+        #set box
+        boxplot['boxes'][box_no].set_ydata([p25,p25,p75,p75,p25])
+        
+        box_no +=1
+    
+    return boxplot
+
+
 def plotWalks():
+    global __max__
     
     minmax = [[s[0],s[1]] for s in firstN(19)]
     histograms = [s[2] for s in firstN(19)]
-    stats    = [h.getPercentiles() for h in histograms]
-    medians  = list(map(lambda s: s[1],stats))
-    intervals = list(map(lambda s: [s[0],s[2]],stats))
-    data = [ s + m for s,m in zip(stats,minmax)]
-    plt.boxplot(data,usermedians=medians)
+    percentiles    = [h.getPercentiles() for h in histograms]
+    #medians  = list(map(lambda s: s[1],stats))
+    #intervals = list(map(lambda s: [s[0],s[2]],stats))
+    stats = [ p + mm for p,mm in zip(percentiles,minmax)]
+    #plt.boxplot(data,usermedians=medians)
     #print(zip(minmax,stats))
+    get_boxplot_from_stats(stats)
+    plt.axis([0,20,0,__max__])
     plt.show()
 
 
@@ -130,8 +163,8 @@ if __name__=='__main__':
         sys.exit(-1)
     
     #set up histogram parameters
-    nodes  = int(sys.argv[2]) - 1
-    __max__      = 2 * sqrt(nodes - 1)
+    leaves  = int(sys.argv[2])
+    __max__      = 2 * sqrt(leaves - 1)
     __min__      = 0
     __bincount__ = int(sys.argv[3])
     
