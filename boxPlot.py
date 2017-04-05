@@ -1,6 +1,7 @@
 import glob
 import os
 import sys
+import numpy as np
 import matplotlib.pyplot as plt
 
 __stats__ = []
@@ -29,7 +30,7 @@ def firstN(n):
     return __stats__[0:n]
 
 def plotWalks():
-    plt.boxplot(firstN(20))
+    plt.boxplot(__stats__,manage_xticks=False)
     plt.show()
 
 
