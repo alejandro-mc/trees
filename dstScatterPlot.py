@@ -2,13 +2,16 @@ import glob
 import os
 import sys
 import matplotlib.pyplot as plt
+from random import random
 
 __xdata__ = []
 __ydata__ = []
+__power__ = 1
 
 def gatherStats(filenames):
     global __xdata__
     global __ydata__
+    global __power__
     
     #for each file open the file add stats for each line and step
     for filename in filenames:
@@ -18,7 +21,7 @@ def gatherStats(filenames):
         with open(filename,'r') as dstfile1, open(filename2,'r') as dstfile2:
             for line1,line2 in zip(dstfile1,dstfile2):
                 trimmed1   = line1[0:-1]
-                distances1 = list(map(lambda x : float(x) ,trimmed1.split(',')))
+                distances1 = list(map(lambda x : pow(float(x),__power__) ,trimmed1.split(',')))
                 
                 trimmed2   = line2[0:-1]
                 distances2 = list(map(lambda x : float(x) ,trimmed2.split(',')))
@@ -33,7 +36,7 @@ def plotWalks():
     global __ydata__
     
     for x,y in zip(__xdata__,__ydata__):
-        plt.scatter(x,y)
+        plt.scatter(x,y,s=10,c= (random(),random(),random()),edgecolor='face',linewidths=5)
     
     plt.show()
 
