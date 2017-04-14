@@ -3,6 +3,8 @@ import os
 import sys
 import matplotlib.pyplot as plt
 from random import random
+import numpy as np
+import numpy.linalg as la
 
 __xdata__ = []
 __ydata__ = []
@@ -35,8 +37,24 @@ def plotWalks():
     global __xdata__
     global __ydata__
     
+    plt.subplot(121)
     for x,y in zip(__xdata__,__ydata__):
         plt.scatter(x,y,s=10,c= (random(),random(),random()),edgecolor='face',linewidths=5)
+    
+    #compute correlations 
+    corrvals = []
+    m = len(__xdata__)
+    LOGX = np.log(np.array(__xdata__))
+    LOGY = np.log(np.array(__ydata__) + 0.0001)#added small delta to avoid division by zero
+    
+    for i in range(m):
+        corrvals.append(np.dot(LOGX[i],LOGY[i]) / (la.norm(LOGX[i]) * la.norm(LOGY[i]))) 
+    
+    
+    #plot correlation histogram as a subplot
+    plt.subplot(122)
+    plt.hist(corrvals,100)
+    
     
     plt.show()
 
