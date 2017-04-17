@@ -25,7 +25,7 @@ def getLeafPairs(tree,insertpairs):
     findPair(tree)
     
 
-def writeDistsancesToFile(tfname,index,ofname):
+def writeSeqDistsancesToFile(tfname,index,ofname):
     
     dists = []
     
@@ -70,17 +70,70 @@ def writeDistsancesToFile(tfname,index,ofname):
         for i in range(len(dists)):
             outfile.write(str(index) + '\t' + str(index + 1 + i) + '\t' + str(dists[i]) + '\n')
             
+def writeAllDistsancesToFile(tfname,ofname):
+    
+    dists    = []
+    leafsets = []
+    
+    with open(tfname,'r') as treefile:    
+        lines = treefile.readlines()
+    
+    def appendLeafs(p):#appends leaves to currentleafset **dictionary**
+        sortedLeaves = sorted(p)
+        currentleafset[(sortedLeaves[0],sortedLeaves[1])] = True
+    
+    #get leaf pair set for each tree and store in leafsets
+    for line in lines:
+        current_tree = newickToNestedLst(line[:-1].replace(';',''))
+        currentleafset = {}
+        getLeafPairs(current_tree,appendLeafs)
+        leafsets.append(currentleafset)
+    
+    #for each pair of tree leafsets compute the distance 
+    #as the |leafpairs in comon - no. of leaf pairs of the most balanced of the two trees|
+    #print(leafsets)
+    for i in range(len(leafsets)):
+        for j in range(i+1,len(leafsets)):
+            #set leaf set 1 and two s.t. len(leafset2) > len(leafset1)
+            leafset1,leafset2 = sorted([leafsets[i],leafsets[j]],key=(lambda x: len(x)))
+            
+            #count leafsets in common
+            count = 0
+            for p in leafset1:
+                if leafset2.get(p,False):
+                    count +=1
+            
+            #compute the distance as the ratio 1 - (leafs in common / no. leaf pairs for both trees)
+            dists.append(1 - (float(2*count) / float(len(leafset1) + len(leafset2))))
+            
+    #write distances to file
+    with open(ofname,'w') as outfile:
+        k=0
+        for i in range(len(leafsets)):
+            for j in range(i+1,len(leafsets)):
+                outfile.write(str(i) + '\t' + str(j) + '\t' + str(dists[k]) + '\n')
+                #print(str(i) + '\t' + str(j) + '\t' + str(dists[k]) + '\n')
+                k+=1
             
 
 if __name__=='__main__':
     if len(sys.argv)<4:
         print ("Too few arguments!!")
-        print ("Usage: <tree file name> <init tree index> <output file name>")
+        print ("Usage: <tree file name> <init tree index> <output file name> <-a :to compute intertree distances, nothing otherwise>")
         sys.exit(-1)
     
     tfname = sys.argv[1]
     index  = int(sys.argv[2])
     ofname = sys.argv[3]
-    writeDistsancesToFile(tfname,index,ofname)
+    
+    #select all intertree distances or distances relative to tree(i)
+    if len(sys.argv) == 5:
+        if sys.argv[4] == '-a':
+            writeAllDistsancesToFile(tfname,ofname)
+        else:
+            print("Parameter 4 must be -a or empty")
+            sys.exit(-1)
+    else:
+        writeSeqDistsancesToFile(tfname,index,ofname)
         
         
