@@ -56,13 +56,16 @@ def writeSeqDistsancesToFile(tfname,index,ofname):
         currentleafset = []
         getLeafPairs(current_tree,appendLeafs)
         
+        #count the number of leaf pairs (cherries) 
+        #the reference tree has in common with the current tree
         count = 0
-        for p in currentleafset:
-            if leafset_ref.get(p,False):
-                count +=1
+        for p in currentleafset:#for each leaf pair in the current tree
+            if leafset_ref.get(p,False):#if the pair is in the original tree
+                count +=1#count it
         
-        #the distance is no. leaf pairs of ref - count
-        dists.append(refpair_count - count)
+        #the distance is the fraction of leaf pairs that ref has in common with
+        #the current tree
+        dists.append(1 - (count / refpair_count))
     
     
     #write distances to file
