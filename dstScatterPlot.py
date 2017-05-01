@@ -44,7 +44,7 @@ def plotWalks():
     #compute correlations 
     corrvals = []
     m = len(__xdata__)
-    LOGX = np.log(np.array(__xdata__))
+    LOGX = np.log(np.array(__xdata__) + 0.0001)#added small delta to avoid division by zero
     LOGY = np.log(np.array(__ydata__) + 0.0001)#added small delta to avoid division by zero
     
     for i in range(m):
