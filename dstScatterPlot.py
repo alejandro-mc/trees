@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from random import random
 import numpy as np
 import numpy.linalg as la
+from functools import reduce
 
 __xdata__ = []
 __ydata__ = []
@@ -28,8 +29,17 @@ def gatherStats(filenames):
                 trimmed2   = line2[0:-1]
                 distances2 = list(map(lambda x : float(x) ,trimmed2.split(',')))
                 
-                __xdata__.append(distances1)
-                __ydata__.append(distances2)
+                #remove zero distances
+                filtered_dst1 = []
+                filtered_dst2 = []
+                for dst1,dst2 in zip(distances1,distances2):
+                    if dst1 != 0 and dst2 != 0:
+                        filtered_dst1.append(dst1)
+                        filtered_dst2.append(dst2)
+                
+                #add filteres distance sequences to data
+                __xdata__.append(filtered_dst1)
+                __ydata__.append(filtered_dst2)
                     
 
 
@@ -38,14 +48,33 @@ def plotWalks():
     global __ydata__
     
     plt.subplot(121)
-    for x,y in zip(__xdata__,__ydata__):
+    
+    LOGX = [[np.log(j) for j in i] for i in __xdata__]
+    LOGY = [[np.log(j) for j in i] for i in __ydata__]
+    
+    
+    for x,y in zip(LOGX,LOGY):
         plt.scatter(x,y,s=10,c= (random(),random(),random()),edgecolor='face',linewidths=5)
     
-    #compute correlations 
+    
+    #compute correlations and 
     corrvals = []
     m = len(__xdata__)
-    LOGX = np.log(np.array(__xdata__) + 0.0001)#added small delta to avoid division by zero
-    LOGY = np.log(np.array(__ydata__) + 0.0001)#added small delta to avoid division by zero
+    
+    
+    #fit line through log of points
+    flat_logx = reduce(lambda a,b: a+b,LOGX,[])#flatten LOGX
+    flat_logy = reduce(lambda a,b: a+b,LOGY,[])#flatten LOGY
+    
+    A = np.vstack([flat_logx ,np.ones(len(flat_logx))]).T
+    theta1,theta0 = la.lstsq(A,flat_logy)[0]
+    print(theta1,theta0)#print parameters
+    
+    #plot fitted line
+    x0 = int(min(LOGX[0]))
+    xn = int(max(LOGX[0]))
+    fitx = np.arange(x0,xn,0.1)
+    plt.plot(fitx,theta1*fitx + theta0)
     
     for i in range(m):
         corrvals.append(np.dot(LOGX[i],LOGY[i]) / (la.norm(LOGX[i]) * la.norm(LOGY[i]))) 
