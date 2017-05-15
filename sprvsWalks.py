@@ -21,6 +21,13 @@ def randSPRwalk(daf1,daf2,size,steps,runs,seed):
     out_file_name2 = outpref + "2_" + str(size) + "_" + str(steps) + "_" +\
                          str(runs)  + "_" + str(seed)
     
+    #verify that files don't exist
+    dirlist = os.listdir()
+    if (out_file_name in dirlist or out_file_name2 in dirlist):
+        print("Files", out_file_name,"or",out_file_name2,"already exist in this directory.")
+        return
+    
+    
     #create a file for each spr sequence
     for k in range(runs):
         rand_tree     = genRandBinTree(list(range(size)))
