@@ -22,6 +22,10 @@ def gatherStats(filenames):
         filename2 = filename[:5] + "2" + filename[6:]
         
         with open(filename,'r') as dstfile1, open(filename2,'r') as dstfile2:
+            
+            #display filenames being processed
+            print("gathering data from: ",filename,"and",filename2)
+            
             for line1,line2 in zip(dstfile1,dstfile2):
                 trimmed1   = line1[0:-1]
                 distances1 = list(map(lambda x : pow(float(x),__power__) ,trimmed1.split(',')))
@@ -96,9 +100,8 @@ if __name__=='__main__':
 
     dstfiles = glob.glob( sys.argv[1] + "1_" + sys.argv[2] + "_*")
     
-    for i in dstfiles:
-        print("gathering data from: " + i)
-        gatherStats(dstfiles)
+    gatherStats(dstfiles)
+
     
     #do domething with the stats
     plotWalks()
