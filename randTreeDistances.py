@@ -1,18 +1,23 @@
 from tree_utils import *
+import w_tree_utils as wtu
+import numpy as np
 import os
 import sys
+from math import sqrt
 
 __pid__ = 0
 __prefix__ = "DST_"
 
 
 #daf: distance algorithm file
-def randTreeDistances(daf,size,runs,seed):
+def randTreeDistances(daf,size,runs,seed,weighted = False):
     global __pid__
-    global__prefix__
+    global __prefix__
     
     #set the seed
     random.seed(seed)
+    if weighted:
+        np.random.seed(seed)
     
     outfile = __prefix__ + str(size) + "_"+\
                        str(runs)  + "_" + str(seed) 
@@ -21,9 +26,14 @@ def randTreeDistances(daf,size,runs,seed):
     #write current sequence to file
     infile = "tmptrees" + str(__pid__)
     with open(infile,'w') as treefile:
-        for k in range(runs):
-            rand_tree = genRandBinTree(list(range(size)))
-            treefile.write(toNewickTree(rand_tree) + "\n")
+        if not weighted:
+            for k in range(runs):
+                rand_tree = genRandBinTree(list(range(size)))
+                treefile.write(toNewickTree(rand_tree) + "\n")
+        else:
+            for k in range(runs):
+                rand_tree = wtu.normalizeTree(wtu.genRandBinTree(list(range(size)),np.random.exponential),sqrt(2*(size-1)))
+                treefile.write(wtu.toNewickTree(rand_tree) + "\n")
     
             
     #assumes GTP file is in current working directory
@@ -36,13 +46,21 @@ def randTreeDistances(daf,size,runs,seed):
 if __name__=='__main__':
     if len(sys.argv)<5:
         print ("Too few arguments!!")
-        print ("Usage: <distance algorithm file .jar> <size or size range> <no. runs> <seed or seed range>")
+        print ("Usage: [-w] <distance algorithm file .jar> <size or size range> <no. runs> <seed or seed range>")
         sys.exit(-1)
+    
+    WEIGHTED = False
+    if len(sys.argv) == 6:
+        WEIGHTED = sys.argv.pop(1) == '-w'
     
     dist_algo_file = sys.argv[1]
     
     if dist_algo_file != "gtp.jar":
         __prefix__ = "DRF_"
+    
+    if WEIGHTED:
+        __prefix__ = 'W' + __prefix__
+    
     
     #take a single size or a range of sizes
     if ":" in sys.argv[2]:
@@ -70,4 +88,4 @@ if __name__=='__main__':
 
     for size in size_range:
         for seed in seed_range:
-            randTreeDistances(dist_algo_file,size,runs,seed)
+            randTreeDistances(dist_algo_file,size,runs,seed,WEIGHTED)
