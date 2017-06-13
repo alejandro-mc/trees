@@ -6,7 +6,7 @@ if __name__ == "__main__":
     for line in sys.stdin:
         ignored,x,y = line.split("\t")
         
-        if x=="2":
+        if x=="1":
             strline += "\n"
         
         strline += y.replace("\n","") + ","

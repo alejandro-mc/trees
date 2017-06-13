@@ -26,15 +26,16 @@ def randSPRwalk(daf,size,steps,runs,seed,weighted=False):
     #select tree utils module
     if weighted:
         tum = wtu
-        genRandBinTree = lambda leaves: wtu.normalizeTree(
-                                             wtu.genRandBinTree(leaves,np.random.exponential),
-                                             sqrt(2*(size-1)))
+        genRandBinTree = lambda leaves: wtu.genRandBinTree(leaves,np.random.exponential)
     else:
         tum = tu
         genRandBinTree = lambda leaves: tu.genRandBinTree(leaves)
+        tum.treeNorm = lambda x: 0.25
     
     out_file_name = __prefix__ + str(size) + "_" + str(steps) + "_" +\
                     str(runs)  + "_" + str(seed) 
+    
+    normsfile_name = out_file_name + '.norms'
     
     #create a file for each spr sequence
     for k in range(runs):
@@ -43,18 +44,32 @@ def randSPRwalk(daf,size,steps,runs,seed,weighted=False):
         #write current sequence to file
         infile_prefix = "tmpsprseq" + str(__pid__)
         infile        = infile_prefix + str(k)
-        with open(infile,'w') as treefile:
+        with open(infile,'w') as treefile, open(normsfile_name,'w') as nrmfile:
             treefile.write(tum.toNewickTree(rand_tree) + "\n")
             current_tree = rand_tree
+            
+            #write tree norms-----
+            #save norm of first tree
+            norm1 = sqrt(tum.treeNorm(rand_tree))
+            walknorms = ''
+            
             for i in range(steps):
                 current_tree = tum.randSPR(current_tree,total_nodes)[0]
                 treefile.write(tum.toNewickTree(current_tree) + "\n")
+                
+                #write ||T1|| + ||T2||
+                walknorms += str(norm1 + sqrt(tum.treeNorm(current_tree))) + ',' 
+            
+            #write norms sequence
+            nrmfile.write(walknorms[0:-1] + '\n')
+        
+            
             
         #assumes GTP file is in current working directory
         outfile       = "tempseq" + str(__pid__) + ".csv"
         infile_prefix = "tmpsprseq" + str(__pid__)
         infile        = infile_prefix + str(k)
-        os.system("java -jar " + daf + " -r 1 -o " + outfile + " " + infile)
+        os.system("java -jar " + daf + " -r 0 -o " + outfile + " " + infile)
         #append output to final sequence file
         os.system("cat " + outfile + " | ./toLines.py >> " + out_file_name)
         #cleanup
@@ -79,6 +94,8 @@ if __name__=='__main__':
     
     if WEIGHTED:
         __prefix__ = 'W' + __prefix__
+    else:
+        __prefix__ = 'U' + __prefix__
     
     #take a single size or a range of sizes
     if ":" in sys.argv[2]:

@@ -11,6 +11,23 @@ def gatherStats(filenames):
     
     #for each file open the file add stats for each line and step
     for filename in filenames:
+        
+        #check for norm files and load values to list
+        normsfile_name = filename + '.norms'
+        if os.path.isfile(normsfile_name):
+            def norm_stream(): 
+                with open(normsfile_name,'r') as nrmfile:
+                    for line in nrmfile:
+                        trimmed = line[0:-1]
+                        norms = list(map(lambda x : float(x) ,trimmed.split(',')))
+                        for i in range(len(norms)):
+                            yield norms[i]
+        else:
+            def norm_stream():
+                while True:
+                    yield 1
+        
+        
         with open(filename,'r') as sprfile:
             for line in sprfile:
                 trimmed   = line[0:-1]
@@ -21,9 +38,9 @@ def gatherStats(filenames):
                     #later will contain min max and histogram to handle
                     #large ammounts of data efficiently
                     if i < len(__stats__):
-                        __stats__[i].append(distances[i])
+                        __stats__[i].append(distances[i]/ next(norm_stream()))
                     else:
-                        __stats__.append([distances[i]])
+                        __stats__.append([distances[i] / next(norm_stream())])
     
 
 def firstN(n):
@@ -41,6 +58,7 @@ if __name__=='__main__':
         sys.exit(-1)
 
     spr_files = glob.glob( sys.argv[1] + "_" + sys.argv[2] + "_*")
+    spr_files = list(filter(lambda x: '.norms' not in x,spr_files))
     
     for i in spr_files:
         print("gathering data from: " + i)
