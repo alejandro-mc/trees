@@ -81,7 +81,8 @@ def rotateNode(tree,targetNode,i):
     left,j  = rotateNode(leftSubtree(tree),targetNode,i+1)
     right,k = rotateNode(rightSubtree(tree),targetNode,j+1)
     
-    return ([left,right],k)
+    stem_weight = tree[1]
+    return ([[left,right],stem_weight],k)
     
 #perform a random NNI move
 def randNNI(tree,total_nodes):
@@ -146,22 +147,32 @@ def countNodes(tree):
     return 1 + countNodes(tree[0][0]) + countNodes(tree[0][1])
 
 
-def normalizeBranch(branch,maxnorm):
+def branchNorm(branch):
     
-    if not isinstance(children(branch),list):
-        return [ children(branch) , stem_weight(branch) / maxnorm]
+    #base case
+    if not isinstance(branch[0],list):#leaf
+        return branch[1]**2
     
-    return [[normalizeBranch(leftSubtree(branch),maxnorm), normalizeBranch(rightSubtree(branch), maxnorm)],
-             stem_weight(branch) / maxnorm]
+    
+    left_child  = branch[0][0]
+    right_child = branch[0][1]
+    stem_weight = branch[1]
+    
+    #recursive
+    return stem_weight**2 + branchNorm(left_child) + branchNorm(right_child)
 
-def normalizeTree(root,maxnorm):
-    [normtree,_] = normalizeBranch([root,0],maxnorm)
-    return normtree
+
+def treeNorm(tree):
+    return branchNorm(tree[0]) + branchNorm(tree[1])
 
 #perform random SPR move
 __prunedbranch__ = []
+__prunelevel__ = -1
 def randSPR(tree,total_nodes):
     global __prunedbranch__
+    global __prunelevel__ 
+    __prunelevel__ = -1
+    
     targetNode = random.randint(1,total_nodes)
     pruned,n = __prune__([tree,0],targetNode,0)
     
@@ -179,14 +190,20 @@ def randSPR(tree,total_nodes):
 
 def __prune__(tree,targetNode,visited_nodes):
     global __prunedbranch__
+    global __prunelevel__
+    
+    __prunelevel__ += 1 #tree level increases with every call
+    
     #basecases
     
     #tree is a leaf
     if not isinstance(tree[0],list):
+        __prunelevel__ -= 1
         return (tree,visited_nodes + 0)#no nodes where visited no pruning
     
     #we don't want to visit any nodes after target node has been reached
     if targetNode == visited_nodes:
+        __prunelevel__ -= 1
         return (tree,visited_nodes + 0)
     
     #(not a leaf) or (target not reached) ==> node visited
@@ -194,6 +211,23 @@ def __prune__(tree,targetNode,visited_nodes):
     
     #node to be pruned
     if  targetNode == visited_nodes+1:
+        
+        #special case adjacent to root
+        if __prunelevel__ == 0:
+            whichBranch = random.randint(0,1)
+            __prunedbranch__ = tree[0][whichBranch]
+            weight_other_branch = tree[0][not whichBranch][1]
+            __prunedbranch__[1] += weight_other_branch
+            
+            #return pruned subtree as root
+            notpruned = tree[0][not whichBranch]
+            stemless = notpruned[0]#remove branch stem
+            __prunelevel__ -= 1
+            return ([stemless,0],visited_nodes+1)
+        
+        
+        #general case----------------------
+        
         #[[[A,w1],[B,w2]],w3]
         #WLOG let the selected branch be [B,w2]
         whichBranch = random.randint(0,1)
@@ -204,6 +238,7 @@ def __prune__(tree,targetNode,visited_nodes):
         A = notpruned[0]
         w1 = notpruned[1]
         w3 = tree[1]
+        __prunelevel__ -= 1
         return ([A,w1+w3],visited_nodes+1)
     
 
