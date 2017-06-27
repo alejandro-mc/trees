@@ -1,25 +1,49 @@
 #gtp_vs_lpic_Walks.py
-from tree_utils import *
+#import tree_utils as tu
+#import w_tree_utils as wtu
+import numpy as np
+import random
 import os
 import sys
+from math import sqrt
 
 __pid__ = 0
 
 #daf: distance algorithm file
-def randSPRwalk(daf1,daf2,size,steps,runs,seed):
+def randSPRwalk(daf1,daf2,size,steps,runs,seed,weighted=False):
     global __pid__
     
     #set the seed
     random.seed(seed)
+    np.random.seed(seed)
     
     outpref = 'SPR' + daf1[0].upper() + daf2[0].upper()
-        
+    
+    #prepend the weighted prefix
+    if weighted:
+        outpref = 'W' + outpref
+    else:
+        outpref = 'U' + outpref
+    
+    #select toNewickTree,randSPR,treeNorm, and genRandBinTree functions
+    #from the correct tree utils module
+    if weighted:
+        from w_tree_utils import toNewickTree,randSPR,treeNorm
+        import w_tree_utils as wtu
+        genRandBinTree = lambda leaves: wtu.genRandBinTree(leaves,np.random.exponential)
+    else:
+        from tree_utils import toNewickTree,randSPR,genRandBinTree
+        treeNorm = lambda x: 0.25
+    
     out_file_name = outpref + "1_" + str(size) + "_" + str(steps) + "_" +\
                     str(runs)  + "_" + str(seed) 
         
     #file name for lpd distance file
     out_file_name2 = outpref + "2_" + str(size) + "_" + str(steps) + "_" +\
                          str(runs)  + "_" + str(seed)
+    
+    
+    normsfile_name = out_file_name + '.norms'
     
     #verify that files don't exist
     dirlist = os.listdir()
@@ -31,31 +55,47 @@ def randSPRwalk(daf1,daf2,size,steps,runs,seed):
     #create a file for each spr sequence
     for k in range(runs):
         rand_tree     = genRandBinTree(list(range(size)))
-        total_nodes   = countNodes(rand_tree)
+        total_nodes   = size - 1
         #write current sequence to file
         infile_prefix = "tmpsprseq" + str(__pid__)
         infile        = infile_prefix + str(k)
-        with open(infile,'w') as treefile:
+        with open(infile,'w') as treefile,open(normsfile_name,'w') as nrmfile:
             treefile.write(toNewickTree(rand_tree) + "\n")
             current_tree = rand_tree
             for i in range(steps):
                 current_tree = randSPR(current_tree,total_nodes)[0]
                 treefile.write(toNewickTree(current_tree) + "\n")
+                
+                #write tree norms-----
+                #save norm of first tree
+                norm1 = sqrt(treeNorm(rand_tree))
+                walknorms = ''
             
+                for i in range(steps):
+                    current_tree = randSPR(current_tree,total_nodes)[0]
+                    treefile.write(toNewickTree(current_tree) + "\n")
+                
+                    #write ||T1|| + ||T2||
+                    walknorms += str(norm1 + sqrt(treeNorm(current_tree))) + ',' 
+            
+                #write norms sequence
+                nrmfile.write(walknorms[0:-1] + '\n')
+        
+        
         #assumes GTP file is in current working directory
         outfile       = "tempseq" + str(__pid__) + ".csv"
         infile_prefix = "tmpsprseq" + str(__pid__)
         infile        = infile_prefix + str(k)
-        os.system("java -jar " + daf1 + " -r 1 -o " + outfile + " " + infile)
+        os.system("java -jar " + daf1 + " -r 0 -o " + outfile + " " + infile)
         #append output to final sequence file
         os.system("cat " + outfile + " | ./toLines.py >> " + out_file_name)
         
         #compute other distance
         outfile2 = "tempsprseq2" + str(__pid__) + ".csv"
         if daf2.split('.')[1] == 'py':
-            os.system("python lpd.py " + infile + " 1 " + outfile2)
+            os.system("python lpd.py " + infile + " 0 " + outfile2)
         else:
-            os.system("java -jar " + daf2 + " -r 1 -o " + outfile2 + " " + infile)
+            os.system("java -jar " + daf2 + " -r 0 -o " + outfile2 + " " + infile)
         
         #append output to second sequence file
         os.system("cat " + outfile2 + " | ./toLines.py >> " + out_file_name2)
@@ -69,8 +109,13 @@ def randSPRwalk(daf1,daf2,size,steps,runs,seed):
 if __name__=='__main__':
     if len(sys.argv)<6:
         print ("Too few arguments!!")
-        print ("Usage: <GR GL or RL> <size or size range> <no. SPR steps> <no. runs> <seed or seed range>")
+        print ("Usage: [-w] <GR GL or RL> <size or size range> <no. SPR steps> <no. runs> <seed or seed range>")
         sys.exit(-1)
+    
+    WEIGHTED = False
+    if len(sys.argv) == 7:
+        WEIGHTED = sys.argv.pop(1) == '-w'
+    
     
     code = sys.argv[1]
     code = code.upper()
@@ -115,4 +160,4 @@ if __name__=='__main__':
 
     for size in size_range:
         for seed in seed_range:
-            randSPRwalk(dist_algo_file1,dist_algo_file2,size,steps,runs,seed)
+            randSPRwalk(dist_algo_file1,dist_algo_file2,size,steps,runs,seed,WEIGHTED)

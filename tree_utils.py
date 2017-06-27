@@ -1,6 +1,7 @@
 import random
 from math import ceil
 from math import factorial
+import re
 random.seed()
 
 #partitions lst
@@ -205,7 +206,8 @@ def toNewickTree(tree):
     return ntree[0:-1] + ")"
 
 def newickToNestedLst(newick_tree):
-    return eval(newick_tree.replace(":1","").replace("(","[").replace(")","]"))
+    return eval(re.sub(r'\:[0-9]+\.[0-9]+|e[\-]?[0-9]+|\:[0-9]+','',newick_tree.replace('(','[').replace(')',']')))
+    #return eval(newick_tree.replace(":1","").replace("(","[").replace(")","]"))
 
 #compare two trees using variation of AHU algorithm
 #for every node or leaf at every level

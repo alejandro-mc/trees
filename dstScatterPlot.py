@@ -19,7 +19,23 @@ def gatherStats(filenames):
     #for each file open the file add stats for each line and step
     for filename in filenames:
         
-        filename2 = filename[:5] + "2" + filename[6:]
+        #check for norm files and load values to list
+        normsfile_name = filename + '.norms'
+        if os.path.isfile(normsfile_name):
+            def norm_stream(): 
+                with open(normsfile_name,'r') as nrmfile:
+                    for line in nrmfile:
+                        trimmed = line[0:-1]
+                        norms = list(map(lambda x : float(x) ,trimmed.split(',')))
+                        for i in range(len(norms)):
+                            yield norms[i]
+        else:
+            def norm_stream():
+                while True:
+                    yield 1
+        
+        
+        filename2 = filename[:6] + "2" + filename[7:]
         
         with open(filename,'r') as dstfile1, open(filename2,'r') as dstfile2:
             
@@ -33,10 +49,18 @@ def gatherStats(filenames):
                 trimmed2   = line2[0:-1]
                 distances2 = list(map(lambda x : float(x) ,trimmed2.split(',')))
                 
+                #nomalize distances
+                norm_dist1=[]
+                norm_dist2 =[]
+                for dst1,dst2 in zip(distances1,distances2):
+                    norm = next(norm_stream())
+                    norm_dist1.append(dst1 / norm)
+                    norm_dist2.append(dst2 / norm)
+                
                 #remove zero distances
                 filtered_dst1 = []
                 filtered_dst2 = []
-                for dst1,dst2 in zip(distances1,distances2):
+                for dst1,dst2 in zip(norm_dist1,norm_dist2):
                     if dst1 != 0 and dst2 != 0:
                         filtered_dst1.append(dst1)
                         filtered_dst2.append(dst2)
@@ -99,6 +123,7 @@ if __name__=='__main__':
         sys.exit(-1)
 
     dstfiles = glob.glob( sys.argv[1] + "1_" + sys.argv[2] + "_*")
+    dstfiles = list(filter(lambda x: '.norms' not in x,dstfiles))
     
     gatherStats(dstfiles)
 
