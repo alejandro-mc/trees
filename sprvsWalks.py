@@ -62,24 +62,20 @@ def randSPRwalk(daf1,daf2,size,steps,runs,seed,weighted=False):
         with open(infile,'w') as treefile,open(normsfile_name,'w') as nrmfile:
             treefile.write(toNewickTree(rand_tree) + "\n")
             current_tree = rand_tree
+            
+            #save norm of first tree
+            norm1 = sqrt(treeNorm(rand_tree))
+            walknorms = ''
+            
             for i in range(steps):
                 current_tree = randSPR(current_tree,total_nodes)[0]
                 treefile.write(toNewickTree(current_tree) + "\n")
                 
-                #write tree norms-----
-                #save norm of first tree
-                norm1 = sqrt(treeNorm(rand_tree))
-                walknorms = ''
+                #write ||T1|| + ||T2||
+                walknorms += str(norm1 + sqrt(treeNorm(current_tree))) + ',' 
             
-                for i in range(steps):
-                    current_tree = randSPR(current_tree,total_nodes)[0]
-                    treefile.write(toNewickTree(current_tree) + "\n")
-                
-                    #write ||T1|| + ||T2||
-                    walknorms += str(norm1 + sqrt(treeNorm(current_tree))) + ',' 
-            
-                #write norms sequence
-                nrmfile.write(walknorms[0:-1] + '\n')
+            #write norms sequence
+            nrmfile.write(walknorms[0:-1] + '\n')
         
         
         #assumes GTP file is in current working directory
