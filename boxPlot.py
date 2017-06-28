@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 __stats__ = []
 
-def gatherStats(filenames):
+def gatherStats(filenames,normalized=False):
     global __stats__
     
     #for each file open the file add stats for each line and step
@@ -14,7 +14,7 @@ def gatherStats(filenames):
         
         #check for norm files and load values to list
         normsfile_name = filename + '.norms'
-        if os.path.isfile(normsfile_name):
+        if os.path.isfile(normsfile_name) and normalized:
             def norm_stream(): 
                 with open(normsfile_name,'r') as nrmfile:
                     for line in nrmfile:
@@ -54,15 +54,19 @@ def plotWalks():
 if __name__=='__main__':
     if len(sys.argv)<3:
         print ("Too few arguments!!")
-        print ("Usage: <prefix> <no. leaves>")
+        print ("Usage: [-n] <prefix> <no. leaves>")
         sys.exit(-1)
 
+    normalized = False
+    if len(sys.argv) == 4:
+        normalized = sys.argv.pop(1) == '-n'
+    
     spr_files = glob.glob( sys.argv[1] + "_" + sys.argv[2] + "_*")
     spr_files = list(filter(lambda x: '.norms' not in x,spr_files))
     
     for i in spr_files:
         print("gathering data from: " + i)
-        gatherStats(spr_files)
+        gatherStats(spr_files,normalized)
     
     #do domething with the stats
     plotWalks()
