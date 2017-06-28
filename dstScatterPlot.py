@@ -11,7 +11,7 @@ __xdata__ = []
 __ydata__ = []
 __power__ = 1
 
-def gatherStats(filenames):
+def gatherStats(filenames,normalized=False):
     global __xdata__
     global __ydata__
     global __power__
@@ -21,7 +21,7 @@ def gatherStats(filenames):
         
         #check for norm files and load values to list
         normsfile_name = filename + '.norms'
-        if os.path.isfile(normsfile_name):
+        if os.path.isfile(normsfile_name) and normalized:
             def norm_stream(): 
                 with open(normsfile_name,'r') as nrmfile:
                     for line in nrmfile:
@@ -119,13 +119,17 @@ def plotWalks():
 if __name__=='__main__':
     if len(sys.argv)<3:
         print ("Too few arguments!!")
-        print ("Usage: <prefix> <no. leaves>")
+        print ("Usage: [-n] <prefix> <no. leaves>")
         sys.exit(-1)
 
+    normalized = False
+    if len(sys.argv) == 4:
+        normalized = sys.argv.pop(1) == '-n'
+    
     dstfiles = glob.glob( sys.argv[1] + "1_" + sys.argv[2] + "_*")
     dstfiles = list(filter(lambda x: '.norms' not in x,dstfiles))
     
-    gatherStats(dstfiles)
+    gatherStats(dstfiles,normalized)
 
     
     #do domething with the stats
