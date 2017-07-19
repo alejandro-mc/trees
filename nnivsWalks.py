@@ -126,7 +126,6 @@ if __name__=='__main__':
         dist_algo_file2 = 'rfd.jar'
     
     
-    #dist_algo_file = sys.argv[1]
     
     #take a single size or a range of sizes
     if ":" in sys.argv[2]:
