@@ -15,7 +15,7 @@ def gatherStats(filenames):
     #for each file open the file add stats for each line and step
     for filename in filenames:
         
-        filename2 = filename[:5] + "2" + filename[6:]
+        filename2 = filename[:6] + "2" + filename[7:]
         print("gathering data from: " + filename,' and ', filename2)
         
         with open(filename,'r') as dist_file1, open(filename2,'r') as dist_file2:
@@ -42,7 +42,11 @@ def plotDists():
     global __xdata__
     global __ydata__
     
+    plt.subplot(121)
     plt.scatter(__xdata__,__ydata__,s=10,c= (random(),random(),random()),edgecolor='face',linewidths=5)
+    
+    plt.subplot(122)
+    plt.hist(__ydata__,100)
     
     plt.show()
                 

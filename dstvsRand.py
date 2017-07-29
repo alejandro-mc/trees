@@ -1,19 +1,40 @@
-from tree_utils import *
+import numpy as np
+import random
 import os
 import sys
+from math import sqrt
 
 __pid__ = 0
 
 #daf1: distance algorithm file
-def randTreeDistances(daf1,daf2,size,runs,seed):
+def randTreeDistances(daf1,daf2,size,runs,seed,weighted=False):
     global __pid__
     global __prefix__
     
     #set the seed
     random.seed(seed)
+    np.random.seed(seed)
     
     #compose output file name
     outpref = 'DST' + daf1[0].upper() + daf2[0].upper()
+    
+    #prepend the weighted prefix
+    if weighted:
+        outpref = 'W' + outpref
+    else:
+        outpref = 'U' + outpref
+    
+    
+    #select toNewickTree,randSPR,treeNorm, and genRandBinTree functions
+    #from the correct tree utils module
+    if weighted:
+        from w_tree_utils import toNewickTree,randNNI,treeNorm
+        import w_tree_utils as wtu
+        genRandBinTree = lambda leaves: wtu.genRandBinTree(leaves,np.random.exponential)
+    else:
+        from tree_utils import toNewickTree,randNNI,genRandBinTree
+        treeNorm = lambda x: 0.25
+    
         
     #file name for first dst file
     out_file_name1 = outpref + "1_" + str(size) + "_" + str(runs)  + "_" + str(seed) 
@@ -21,6 +42,12 @@ def randTreeDistances(daf1,daf2,size,runs,seed):
     #file name for second dst file
     out_file_name2 = outpref + "2_" + str(size) + "_" + str(runs)  + "_" + str(seed)
     
+    
+    #verify that files don't exist
+    dirlist = os.listdir()
+    if (out_file_name1 in dirlist or out_file_name2 in dirlist):
+        print("Files", out_file_name1,"or",out_file_name2,"already exist in this directory.")
+        return
     
     #create a file to write all the trees
     #write current sequence to file
@@ -48,8 +75,12 @@ def randTreeDistances(daf1,daf2,size,runs,seed):
 if __name__=='__main__':
     if len(sys.argv)<5:
         print ("Too few arguments!!")
-        print ("Usage: <GR GL or RL> <size or size range> <no. runs> <seed or seed range>")
+        print ("Usage: [-w] <GR GL or RL> <size or size range> <no. runs> <seed or seed range>")
         sys.exit(-1)
+        
+    WEIGHTED = False
+    if len(sys.argv) == 6:
+        WEIGHTED = sys.argv.pop(1) == '-w'
      
     #select distance algorithm file according to code
     code = sys.argv[1]
@@ -92,4 +123,4 @@ if __name__=='__main__':
 
     for size in size_range:
         for seed in seed_range:
-            randTreeDistances(dist_algo_file1,dist_algo_file2,size,runs,seed)
+            randTreeDistances(dist_algo_file1,dist_algo_file2,size,runs,seed,WEIGHTED)
